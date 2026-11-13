@@ -1,0 +1,6 @@
+{
+  "name": "JobShield AI",
+  "description": "Next-generation AI-powered job and internship fraud detection platform protecting students and job seekers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
