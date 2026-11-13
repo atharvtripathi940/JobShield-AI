@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   ShieldAlert, 
@@ -14,8 +14,7 @@ import {
   X,
   User,
   LogOut,
-  ChevronDown,
-  Database
+  ChevronDown
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.js';
 import { useLanguage } from '../context/LanguageContext.js';
@@ -32,6 +31,28 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [customNameInput, setCustomNameInput] = useState('');
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+        setIsEditingName(false);
+      }
+    };
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setUserMenuOpen(false);
+        setIsEditingName(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
 
   const userInitial = (user?.fullName || user?.email || 'U').trim().charAt(0).toUpperCase();
   const displayUserName = user?.fullName?.trim() || user?.email?.split('@')[0] || 'User';
@@ -106,144 +127,156 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
 
           {/* Right Action Bar */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* User Profile / Quick Switch */}
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl bg-slate-900/95 border border-slate-700/80 hover:border-cyan-500/60 transition-all text-xs shadow-sm hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] group"
-                  title={displayUserName}
-                >
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-[11px] shrink-0 transition-transform group-hover:scale-105 ${
-                    user.role === 'admin' 
-                      ? 'bg-red-500/20 text-red-300 border border-red-500/40 shadow-[0_0_8px_rgba(239,68,68,0.2)]' 
-                      : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.2)]'
-                  }`}>
-                    {userInitial}
-                  </div>
-                  <div className="text-left flex flex-col justify-center min-w-0 max-w-[120px] sm:max-w-[180px]">
-                    <p className="text-slate-100 font-semibold truncate leading-tight text-xs tracking-tight" title={displayUserName}>
-                      {displayUserName}
-                    </p>
-                    <p className="text-[10px] text-slate-400 capitalize truncate leading-tight font-mono">
-                      {user.role} {user.isDemo && '• Demo'}
-                    </p>
-                  </div>
-                  <ChevronDown className="w-3 h-3 text-slate-400 shrink-0 group-hover:text-slate-200 transition-colors" />
-                </button>
-
-                {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-[#0c1222] border border-slate-700 rounded-xl shadow-2xl p-2.5 z-50 text-xs">
-                    <div className="px-2 py-2 border-b border-slate-800 mb-2">
-                      {isEditingName ? (
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            if (customNameInput.trim()) {
-                              updateProfile({ fullName: customNameInput.trim() });
-                            }
-                            setIsEditingName(false);
-                          }}
-                          className="space-y-1.5 py-1"
-                        >
-                          <label className="text-[10px] font-mono text-cyan-400 uppercase font-bold">Change Profile Name:</label>
-                          <input
-                            type="text"
-                            autoFocus
-                            value={customNameInput}
-                            onChange={(e) => setCustomNameInput(e.target.value)}
-                            placeholder="Enter your name..."
-                            className="w-full px-2.5 py-1 text-xs rounded bg-slate-950 border border-cyan-500/60 text-white focus:outline-none focus:ring-1 focus:ring-cyan-400"
-                          />
-                          <div className="flex gap-1.5 pt-1">
-                            <button
-                              type="submit"
-                              className="px-2.5 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold"
-                            >
-                              Save Name
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setIsEditingName(false)}
-                              className="px-2.5 py-1 rounded bg-slate-800 text-slate-400 hover:text-white text-[10px]"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </form>
-                      ) : (
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <p className="font-semibold text-slate-100 truncate text-xs" title={displayUserName}>
-                              {displayUserName}
-                            </p>
-                            <button
-                              onClick={() => {
-                                setCustomNameInput(user.fullName || '');
-                                setIsEditingName(true);
-                              }}
-                              className="text-[10px] font-mono text-cyan-400 hover:underline shrink-0 ml-1.5 font-bold"
-                            >
-                              Edit Name
-                            </button>
-                          </div>
-                          <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
-                          <div className="mt-1.5 flex items-center gap-1.5">
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-purple-900/40 text-purple-300 border border-purple-700/50">
-                              Safety: {user.careerSafetyScore}/100
-                            </span>
-                          </div>
-                        </div>
-                      )}
+            {/* Sign In / User Profile Menu */}
+            <div className="relative" ref={userMenuRef}>
+              {user ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen((prev) => !prev)}
+                    aria-expanded={userMenuOpen}
+                    aria-haspopup="menu"
+                    className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl bg-slate-900/95 border border-slate-700/80 hover:border-cyan-500/60 transition-all text-xs shadow-sm hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] group cursor-pointer"
+                    title={displayUserName}
+                  >
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center font-bold text-[11px] shrink-0 transition-transform group-hover:scale-105 ${
+                      user.role === 'admin'
+                        ? 'bg-red-500/20 text-red-300 border border-red-500/40 shadow-[0_0_8px_rgba(239,68,68,0.2)]'
+                        : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_8px_rgba(6,182,212,0.2)]'
+                    }`}>
+                      {userInitial}
                     </div>
+                    <div className="text-left flex flex-col justify-center min-w-0 max-w-[120px] sm:max-w-[180px]">
+                      <p className="text-slate-100 font-semibold truncate leading-tight text-xs tracking-tight" title={displayUserName}>
+                        {displayUserName}
+                      </p>
+                      <p className={`text-[10px] truncate leading-tight font-mono ${user.role === 'admin' ? 'text-red-400' : 'text-cyan-400'}`}>
+                        {user.role === 'admin' ? 'Security Admin' : 'Candidate'}
+                      </p>
+                    </div>
+                    <ChevronDown className={`w-3.5 h-3.5 text-slate-400 shrink-0 group-hover:text-slate-200 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
+                  </button>
 
-                    <p className="px-2 py-1 text-[10px] font-mono uppercase text-slate-400">Switch Account Role</p>
-                    <button
-                      onClick={() => { switchDemoRole('user'); setUserMenuOpen(false); }}
-                      className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-cyan-300 flex items-center justify-between"
-                    >
-                      <span>Switch to Student Mode</span>
-                      {user.role === 'user' && <span className="text-cyan-400 font-bold">✓</span>}
-                    </button>
-                    <button
-                      onClick={() => { switchDemoRole('admin'); setUserMenuOpen(false); }}
-                      className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-red-300 flex items-center justify-between"
-                    >
-                      <span>Switch to Admin Mode</span>
-                      {user.role === 'admin' && <span className="text-red-400 font-bold">✓</span>}
-                    </button>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-64 bg-[#0c1222] border border-slate-700 rounded-xl shadow-2xl p-2.5 z-50 text-xs">
+                      <div className="px-2 py-2 border-b border-slate-800 mb-2">
+                        {isEditingName ? (
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              if (customNameInput.trim()) {
+                                updateProfile({ fullName: customNameInput.trim() });
+                              }
+                              setIsEditingName(false);
+                            }}
+                            className="space-y-1.5 py-1"
+                          >
+                            <label className="text-[10px] font-mono text-cyan-400 uppercase font-bold">Change Profile Name:</label>
+                            <input
+                              type="text"
+                              autoFocus
+                              value={customNameInput}
+                              onChange={(e) => setCustomNameInput(e.target.value)}
+                              placeholder="Enter your name..."
+                              className="w-full px-2.5 py-1 text-xs rounded bg-slate-950 border border-cyan-500/60 text-white focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                            />
+                            <div className="flex gap-1.5 pt-1">
+                              <button
+                                type="submit"
+                                className="px-2.5 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold"
+                              >
+                                Save Name
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setIsEditingName(false)}
+                                className="px-2.5 py-1 rounded bg-slate-800 text-slate-400 hover:text-white text-[10px]"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <p className="font-semibold text-slate-100 truncate text-xs" title={displayUserName}>
+                                {displayUserName}
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCustomNameInput(user.fullName || '');
+                                  setIsEditingName(true);
+                                }}
+                                className="text-[10px] font-mono text-cyan-400 hover:underline shrink-0 ml-1.5 font-bold"
+                              >
+                                Edit Name
+                              </button>
+                            </div>
+                            <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
+                            <div className="mt-1.5 flex items-center gap-1.5">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-purple-900/40 text-purple-300 border border-purple-700/50">
+                                Safety: {user.careerSafetyScore}/100
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
 
-                    <button
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        onOpenAuth();
-                      }}
-                      className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-between"
-                    >
-                      <span>Sign In with Another Account</span>
-                      <span className="text-slate-500">&rarr;</span>
-                    </button>
+                      <p className="px-2 py-1 text-[10px] font-mono uppercase text-slate-400">Account Mode</p>
+                      <button
+                        type="button"
+                        onClick={() => { switchDemoRole('user'); setUserMenuOpen(false); }}
+                        className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-cyan-300 flex items-center justify-between"
+                      >
+                        <span>Candidate / Student</span>
+                        {user.role === 'user' && <span className="text-cyan-400 font-bold">✓</span>}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { switchDemoRole('admin'); setUserMenuOpen(false); }}
+                        className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-red-300 flex items-center justify-between"
+                      >
+                        <span>Security Admin</span>
+                        {user.role === 'admin' && <span className="text-red-400 font-bold">✓</span>}
+                      </button>
 
-                    <div className="my-1 border-t border-slate-800"></div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          onOpenAuth();
+                        }}
+                        className="w-full text-left px-2 py-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white flex items-center justify-between"
+                      >
+                        <span>Switch Account</span>
+                        <span className="text-slate-500">&rarr;</span>
+                      </button>
 
-                    <button
-                      onClick={() => { logout(); setUserMenuOpen(false); }}
-                      className="w-full text-left px-2 py-1.5 rounded hover:bg-red-500/10 text-red-400 flex items-center gap-1.5"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      {t.signOutBtn}
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <button
-                onClick={onOpenAuth}
-                className="px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition-colors"
-              >
-                {t.signInBtn}
-              </button>
-            )}
+                      <div className="my-1 border-t border-slate-800"></div>
+
+                      <button
+                        type="button"
+                        onClick={() => { logout(); setUserMenuOpen(false); }}
+                        className="w-full text-left px-2 py-1.5 rounded hover:bg-red-500/10 text-red-400 flex items-center gap-1.5"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        {t.signOutBtn}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenAuth}
+                  className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900/95 hover:bg-slate-800 border border-slate-700/80 hover:border-cyan-500/60 text-slate-100 hover:text-cyan-300 font-semibold text-xs tracking-wide transition-all shadow-sm hover:shadow-[0_0_15px_rgba(6,182,212,0.18)] cursor-pointer"
+                >
+                  <User className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>{t.signInBtn}</span>
+                </button>
+              )}
+            </div>
 
             {/* Quick Analyze CTA */}
             <Link
@@ -298,15 +331,51 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
             </Link>
           )}
 
-          <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-            <span className="text-xs text-slate-400 font-mono flex items-center gap-1.5">
-              <Database className="w-3.5 h-3.5 text-emerald-400" />
-              Database:
-            </span>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono bg-emerald-950/50 text-emerald-300 border border-emerald-500/30">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Supabase Connected</span>
-            </div>
+          <div className="pt-3 border-t border-slate-800 space-y-2">
+            {user ? (
+              <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-slate-900/90 border border-slate-800">
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-white truncate">{displayUserName}</p>
+                  <p className={`text-[10px] font-mono ${user.role === 'admin' ? 'text-red-400' : 'text-cyan-400'}`}>
+                    {user.role === 'admin' ? 'Security Admin' : 'Candidate'}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenAuth();
+                    }}
+                    className="px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 hover:text-white text-xs font-medium"
+                  >
+                    Switch
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="px-2.5 py-1 rounded-md bg-red-500/15 text-red-400 hover:bg-red-500/25 text-xs font-medium"
+                  >
+                    {t.signOutBtn}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenAuth();
+                }}
+                className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/60 text-slate-100 text-sm font-semibold transition-all"
+              >
+                <User className="w-4 h-4 text-cyan-400" />
+                <span>{t.signInBtn}</span>
+              </button>
+            )}
           </div>
         </div>
       )}
