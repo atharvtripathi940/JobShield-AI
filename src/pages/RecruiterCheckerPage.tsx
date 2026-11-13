@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { RecruiterCheckResult } from '../types/jobshield.js';
 import { useLanguage } from '../context/LanguageContext.js';
+import { apiFetch } from '../lib/api.js';
 
 export const RecruiterCheckerPage: React.FC = () => {
   const { t } = useLanguage();
@@ -68,7 +69,7 @@ export const RecruiterCheckerPage: React.FC = () => {
 
     setIsChecking(true);
     try {
-      const response = await fetch('/api/scan/recruiter', {
+      const response = await apiFetch('/api/scan/recruiter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

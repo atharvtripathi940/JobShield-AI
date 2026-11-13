@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { CommunityReport } from '../types/jobshield.js';
 import { useLanguage } from '../context/LanguageContext.js';
+import { apiFetch } from '../lib/api.js';
 
 export const CommunityAlertsPage: React.FC = () => {
   const { t } = useLanguage();
@@ -38,7 +39,7 @@ export const CommunityAlertsPage: React.FC = () => {
 
   const fetchReports = async () => {
     try {
-      const res = await fetch('/api/community/reports');
+      const res = await apiFetch('/api/community/reports');
       const data = await res.json();
       setReports(data);
     } catch (err) {
@@ -56,7 +57,7 @@ export const CommunityAlertsPage: React.FC = () => {
     // Optimistic update
     setReports(prev => prev.map(r => r.id === id ? { ...r, upvotes: r.upvotes + 1, hasUserUpvoted: true } : r));
     try {
-      await fetch(`/api/community/upvote/${id}`, { method: 'POST' });
+      await apiFetch(`/api/community/upvote/${id}`, { method: 'POST' });
     } catch (e) {
       console.error(e);
     }
@@ -68,7 +69,7 @@ export const CommunityAlertsPage: React.FC = () => {
 
     setSubmitting(true);
     try {
-      const res = await fetch('/api/community/report', {
+      const res = await apiFetch('/api/community/report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

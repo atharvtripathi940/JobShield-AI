@@ -20,6 +20,7 @@ import { ScamDnaCard } from '../components/ScamDnaCard.js';
 import { EvidenceExplainer } from '../components/EvidenceExplainer.js';
 import { generateRiskReportPDF } from '../utils/pdfGenerator.js';
 import { useLanguage } from '../context/LanguageContext.js';
+import { apiFetch } from '../lib/api.js';
 
 export const ScreenshotScannerPage: React.FC = () => {
   const { t } = useLanguage();
@@ -34,7 +35,7 @@ export const ScreenshotScannerPage: React.FC = () => {
   const handleSaveScreenshot = async () => {
     if (!scanResult) return;
     try {
-      await fetch('/api/save-job', {
+      await apiFetch('/api/save-job', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -126,7 +127,7 @@ export const ScreenshotScannerPage: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const response = await fetch('/api/scan/image', {
+      const response = await apiFetch('/api/scan/image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

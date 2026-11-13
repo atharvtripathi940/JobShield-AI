@@ -18,6 +18,7 @@ import {
 import { useAuth } from '../context/AuthContext.js';
 import { CommunityReport, PlatformStats } from '../types/jobshield.js';
 import { SUPABASE_PROJECT_ID, testSupabaseConnection } from '../lib/supabase.js';
+import { apiFetch } from '../lib/api.js';
 
 export const AdminPage: React.FC = () => {
   const { user, switchDemoRole } = useAuth();
@@ -38,7 +39,7 @@ export const AdminPage: React.FC = () => {
 
   const fetchAdminData = async () => {
     try {
-      const res = await fetch('/api/admin/overview', {
+      const res = await apiFetch('/api/admin/overview', {
         headers: {
           'Authorization': `Bearer ${user?.id || 'admin-token'}`
         }
@@ -64,7 +65,7 @@ export const AdminPage: React.FC = () => {
 
   const handleModerate = async (reportId: string, status: CommunityReport['status']) => {
     try {
-      await fetch('/api/admin/moderate', {
+      await apiFetch('/api/admin/moderate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reportId, status }),

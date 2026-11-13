@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, Sparkles, MessageSquare, Globe, Shield, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext.js';
+import { apiFetch } from '../lib/api.js';
 
 interface ChatMessage {
   id: string;
@@ -119,7 +120,7 @@ export const ShieldBotWidget: React.FC = () => {
     setIsTyping(true);
 
     try {
-      const res = await fetch('/api/shieldbot/chat', {
+      const res = await apiFetch('/api/shieldbot/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

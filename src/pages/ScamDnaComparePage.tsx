@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Dna, ArrowRightLeft, Sparkles, AlertCircle, CheckCircle2, Loader2, ShieldAlert } from 'lucide-react';
 import { JobComparisonResult } from '../types/jobshield.js';
 import { ScamDnaCard } from '../components/ScamDnaCard.js';
+import { apiFetch } from '../lib/api.js';
 
 export const ScamDnaComparePage: React.FC = () => {
   const [jobATitle, setJobATitle] = useState('Data Entry Specialist');
@@ -22,7 +23,7 @@ export const ScamDnaComparePage: React.FC = () => {
   const handleRunComparison = async () => {
     setIsComparing(true);
     try {
-      const response = await fetch('/api/scan/compare', {
+      const response = await apiFetch('/api/scan/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -30,6 +30,7 @@ import { useAuth } from '../context/AuthContext.js';
 import { useLanguage } from '../context/LanguageContext.js';
 import { JobScanResult, PlatformStats } from '../types/jobshield.js';
 import { generateRiskReportPDF } from '../utils/pdfGenerator.js';
+import { apiFetch } from '../lib/api.js';
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
@@ -41,8 +42,8 @@ export const DashboardPage: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       const [savedRes, statsRes] = await Promise.all([
-        fetch(`/api/saved-jobs?userId=${user?.id || 'demo-user'}`),
-        fetch('/api/stats')
+        apiFetch(`/api/saved-jobs?userId=${user?.id || 'demo-user'}`),
+        apiFetch('/api/stats')
       ]);
 
       const savedData = await savedRes.json();
@@ -63,7 +64,7 @@ export const DashboardPage: React.FC = () => {
   const handleDeleteSaved = async (id: string) => {
     setSavedJobs(prev => prev.filter(j => j.id !== id));
     try {
-      await fetch(`/api/saved-jobs/${id}?userId=${user?.id || 'demo-user'}`, { method: 'DELETE' });
+      await apiFetch(`/api/saved-jobs/${id}?userId=${user?.id || 'demo-user'}`, { method: 'DELETE' });
     } catch (e) {
       console.error(e);
     }
