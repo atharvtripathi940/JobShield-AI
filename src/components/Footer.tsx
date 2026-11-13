@@ -22,18 +22,6 @@ export const Footer: React.FC = () => {
             <p className="text-xs text-slate-400 leading-relaxed">
               Don't Just Find Jobs. Verify Your Future. Next-generation AI fraud defense protecting students, freshers, and job seekers worldwide.
             </p>
-            <div className="flex items-center gap-2 pt-2">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                AI Core Active
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-400 border border-purple-500/30">
-                Gemini 3.8 Flash
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-                Supabase DB
-              </span>
-            </div>
           </div>
 
           {/* Quick Tools */}

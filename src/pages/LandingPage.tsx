@@ -242,7 +242,7 @@ export const LandingPage: React.FC = () => {
             </div>
             <h3 className="text-base font-bold text-white">AI Neural & Rule Scan</h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Gemini 3.8 Flash extracts OCR text, matches 100+ scam signatures, and identifies hidden fee traps.
+              Gemini AI extracts OCR text, matches 100+ scam signatures, and identifies hidden fee traps.
             </p>
           </div>
 

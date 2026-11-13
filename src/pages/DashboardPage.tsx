@@ -127,7 +127,7 @@ export const DashboardPage: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             </div>
             <p className="text-xs text-slate-300 mt-1">
-              Project ID: <code className="text-cyan-300 font-mono font-bold bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">ttqxipatsczknsljmitt</code> • All user profiles, fraud scans, and community reports sync directly to your Supabase cloud database.
+              All user profiles, fraud scans, and community reports sync directly to your Supabase cloud database.
             </p>
           </div>
         </div>

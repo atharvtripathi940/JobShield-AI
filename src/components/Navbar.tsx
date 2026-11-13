@@ -9,7 +9,6 @@ import {
   Dna, 
   Users, 
   BookOpen, 
-  LayoutDashboard, 
   Lock, 
   Menu, 
   X,
@@ -20,7 +19,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.js';
 import { useLanguage } from '../context/LanguageContext.js';
-import { SUPABASE_PROJECT_ID } from '../lib/supabase.js';
 
 interface NavbarProps {
   onOpenAuth: () => void;
@@ -45,7 +43,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
     { to: '/scam-dna-compare', label: t.scamDnaNav, icon: Dna },
     { to: '/community', label: t.communityNav, icon: Users },
     { to: '/learning', label: t.learningNav, icon: BookOpen },
-    { to: '/dashboard', label: t.dashboardNav, icon: LayoutDashboard },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -109,16 +106,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
 
           {/* Right Action Bar */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Supabase Database Live Status */}
-            <div 
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-mono text-emerald-400 bg-emerald-950/40 border border-emerald-500/30"
-              title={`Connected to Supabase Project: ${SUPABASE_PROJECT_ID}`}
-            >
-              <Database className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="hidden xl:inline text-[11px] font-semibold">Supabase Active</span>
-            </div>
-
             {/* User Profile / Quick Switch */}
             {user ? (
               <div className="relative">

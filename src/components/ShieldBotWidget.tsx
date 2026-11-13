@@ -9,6 +9,62 @@ interface ChatMessage {
   time: string;
 }
 
+function renderInlineFormatting(line: string): React.ReactNode[] {
+  const tokens = line.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return tokens.map((token, i) => {
+    if (token.startsWith('**') && token.endsWith('**') && token.length > 4) {
+      return (
+        <strong key={i} className="font-semibold text-white">
+          {token.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (token.startsWith('`') && token.endsWith('`') && token.length > 2) {
+      return (
+        <code key={i} className="px-1 py-0.5 rounded bg-slate-800 text-cyan-300 font-mono text-[11px]">
+          {token.slice(1, -1)}
+        </code>
+      );
+    }
+    return <React.Fragment key={i}>{token}</React.Fragment>;
+  });
+}
+
+function renderFormattedMessage(text: string): React.ReactNode {
+  const lines = text.split('\n');
+  return (
+    <div className="space-y-1.5">
+      {lines.map((rawLine, idx) => {
+        const line = rawLine.trim();
+        if (!line) return <div key={idx} className="h-1" />;
+        if (line.startsWith('### ')) {
+          return (
+            <p key={idx} className="font-bold text-cyan-300 pt-1">
+              {renderInlineFormatting(line.slice(4))}
+            </p>
+          );
+        }
+        if (line.startsWith('## ')) {
+          return (
+            <p key={idx} className="font-bold text-cyan-300 pt-1">
+              {renderInlineFormatting(line.slice(3))}
+            </p>
+          );
+        }
+        if (line.startsWith('* ') || line.startsWith('- ')) {
+          return (
+            <div key={idx} className="flex items-start gap-1.5 pl-1">
+              <span className="text-cyan-400 shrink-0">•</span>
+              <span>{renderInlineFormatting(line.slice(2))}</span>
+            </div>
+          );
+        }
+        return <p key={idx}>{renderInlineFormatting(line)}</p>;
+      })}
+    </div>
+  );
+}
+
 export const ShieldBotWidget: React.FC = () => {
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
@@ -50,6 +106,14 @@ export const ShieldBotWidget: React.FC = () => {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
+    const historyPayload = messages
+      .filter((m) => m.id !== 'init-1' && m.text.trim().length > 0)
+      .slice(-10)
+      .map((m) => ({
+        role: m.sender === 'user' ? ('user' as const) : ('model' as const),
+        parts: [{ text: m.text }],
+      }));
+
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsTyping(true);
@@ -61,14 +125,19 @@ export const ShieldBotWidget: React.FC = () => {
         body: JSON.stringify({
           message: text,
           language: 'en',
+          history: historyPayload,
         }),
       });
+
+      if (!res.ok) {
+        throw new Error(`Chat server returned ${res.status}`);
+      }
 
       const data = await res.json();
       const botMsg: ChatMessage = {
         id: `bot-${Date.now()}`,
         sender: 'bot',
-        text: data.reply || "Golden Rule: Legitimate employers NEVER charge candidates for interviews or placement. How else can I assist you?",
+        text: data.reply || "Legitimate employers NEVER charge candidates for interviews, equipment, or placement. Could you share more details about the message or offer you received?",
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, botMsg]);
@@ -76,13 +145,25 @@ export const ShieldBotWidget: React.FC = () => {
       const fallbackMsg: ChatMessage = {
         id: `bot-fallback-${Date.now()}`,
         sender: 'bot',
-        text: "Important reminder: Genuine corporate HR teams communicate from corporate email domains (e.g. @company.com) and will NEVER ask you for a registration fee, laptop deposit, or Telegram task completion.",
+        text: "I ran into a temporary connection issue reaching the advisor service. Please try sending your question again—and remember, never pay an advance fee or share OTPs with any recruiter.",
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
       setIsTyping(false);
     }
+  };
+
+  const handleResetChat = () => {
+    setMessages([
+      {
+        id: 'init-1',
+        sender: 'bot',
+        text: "Hello! I am ShieldBot, your AI career safety advisor. Ask me anything about job offers, suspicious recruiter messages, or hidden interview fee scams. What would you like to verify today?",
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      },
+    ]);
+    setInput('');
   };
 
   return (
@@ -121,17 +202,27 @@ export const ShieldBotWidget: React.FC = () => {
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 </h4>
                 <p className="text-[10px] text-slate-400 font-mono">
-                  Gemini 3.8 Flash • Multilingual
+                  AI Career Safety Assistant
                 </p>
               </div>
             </div>
 
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleResetChat}
+                title="Start new conversation"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-cyan-300 hover:bg-slate-800 transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                title="Close chat"
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Messages Area */}
@@ -144,11 +235,11 @@ export const ShieldBotWidget: React.FC = () => {
                 <div
                   className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed ${
                     m.sender === 'user'
-                      ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white rounded-tr-none'
+                      ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white rounded-tr-none whitespace-pre-line'
                       : 'bg-slate-900/90 border border-slate-800 text-slate-200 rounded-tl-none shadow-md'
                   }`}
                 >
-                  {m.text}
+                  {m.sender === 'bot' ? renderFormattedMessage(m.text) : m.text}
                 </div>
                 <span className="text-[9px] text-slate-500 font-mono mt-1 px-1">
                   {m.time}

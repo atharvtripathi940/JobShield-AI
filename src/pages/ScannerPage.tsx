@@ -199,7 +199,7 @@ export const ScannerPage: React.FC = () => {
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-xs font-mono mb-2">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Dual Engine: Gemini 3.8 Flash + Cyber Heuristics</span>
+            <span>Dual Engine: Gemini AI + Cyber Heuristics</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white">
             {t.scannerTitle}
